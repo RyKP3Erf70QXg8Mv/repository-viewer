@@ -35,9 +35,9 @@ foreach ($breadcrumb_parts as $part) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-    <title>KUO's Repository viewer</title>
+    <title>/public_bin</title>
     <style>
-        body {
+         body {
             font-family: Arial, sans-serif;
             background-color: #2b2d31;
             background-image: url('https://images7.alphacoders.com/838/thumb-1920-838143.png');
@@ -95,44 +95,58 @@ foreach ($breadcrumb_parts as $part) {
           color: rgba(255,0,0, 1);
         }
 
-
     </style>
     <script>
-        function openPopup(url) {
-            let ext = url.split('.').pop().toLowerCase();
-            let viewerUrl = (ext === 'pdf' || ext === 'docx' || ext === 'ppt')
-                ? `https://docs.google.com/gview?url=${window.location.origin}/${url}&embedded=true`
-                : url;
-            
-            let popup = window.open("", "_blank", "toolbar=no,scrollbars=yes,resizable=yes,fullscreen=yes");
-            popup.document.write(`<iframe src="${viewerUrl}" style="width:100%; height:100vh; border:none;"></iframe>`);
-        }
+        function openPopup(url, isAnime = false) {
+    if (isAnime) {
+        fetch(url)
+            .then(response => response.text())
+            .then(videoUrl => {
+                window.open(videoUrl.trim(), "_blank", "toolbar=no,scrollbars=yes,resizable=yes,fullscreen=yes");
+            })
+            .catch(error => console.error('Error fetching anime file:', error));
+    } else {
+        let ext = url.split('.').pop().toLowerCase();
+        let viewerUrl = (ext === 'pdf' || ext === 'docx' || ext === 'ppt')
+            ? `https://docs.google.com/gview?url=${window.location.origin}/${url}&embedded=true`
+            : url;
+
+        let popup = window.open("", "_blank", "toolbar=no,scrollbars=yes,resizable=yes,fullscreen=yes");
+        popup.location.href = viewerUrl; // Set the pop-up's URL instead of embedding an iframe
+    }
+}
+
     </script>
 </head>
 <body>
     <div class="container">
-        <h1>Repo Viewer <div class="badge badge-outline badge-success">updated<div class="inline-grid *:[grid-area:1/1]"> <div class="status status-success animate-ping"></div> <div class="status status-success"></div> </div></div></h1>
+        <h1>PorconiAnime <div class="badge badge-outline badge-success">alpha0.0.2<div class="inline-grid *:[grid-area:1/1]"> <div class="status status-success animate-ping"></div> <div class="status status-success"></div> </div></div></h1>
         
         <div class="breadcrumbs max-w-xs text-sm">
             <ul>
-                <li><a href="?dir=">bin</a></li>
+                <li><a href="?dir=">home</a></li>
                 <?= implode('', $breadcrumb_links) ?>
             </ul>
         </div>
 
         <ul>
             <?php foreach ($items as $item): ?>
-                <?php $fullPath = "$directory/$item"; ?>
+                <?php 
+                    $fullPath = "$directory/$item";
+                    $fileExtension = pathinfo($item, PATHINFO_EXTENSION);
+                ?>
                 <li>
                     <?php if (is_dir($fullPath)): ?>
                         <a href="?dir=<?= urlencode(trim("$current_directory/$item", '/')) ?>" class="folder element">📁 <?= htmlspecialchars($item) ?></a>
+                    <?php elseif ($fileExtension === 'anime'): ?>
+                        <a href="#" onclick="openPopup('<?= htmlspecialchars($fullPath) ?>', true); return false;" class="element">🎥 <?= htmlspecialchars($item) ?></a>
                     <?php else: ?>
-                        <a href="#" onclick="openPopup('<?= htmlspecialchars($fullPath) ?>'); return false;" class="element">📄 <?= htmlspecialchars($item) ?></a>
+                        <a href="#" onclick="openPopup('<?= htmlspecialchars($fullPath) ?>', false); return false;" class="element">📄 <?= htmlspecialchars($item) ?></a>
                     <?php endif; ?>
+
                 </li>
             <?php endforeach; ?>
         </ul>
     </div>
-    
 </body>
 </html>
